@@ -36,6 +36,7 @@ public class MenuService {
         KeyboardRow row2 = new KeyboardRow();
         row2.add("📊 今日報表");
         row2.add("🏆 代理排行");
+        row2.add("📅 自訂報表");
 
         KeyboardRow row3 = new KeyboardRow();
         row3.add("🚨 異常提醒");

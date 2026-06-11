@@ -69,6 +69,20 @@ public class ReportBot extends TelegramLongPollingBot {
 
             case "📊 今日報表" -> reportService.sendTodayReport(chatId);
 
+            case "📅 自訂報表" -> {telegramMessageService.sendText(
+                        chatId,
+                        """
+                        請輸入：
+            
+                        報表 起始日期 結束日期
+            
+                        範例：
+            
+                        報表 2026-06-01 2026-06-11
+                        """
+                );
+            }
+
             case "👥 會員查詢" -> telegramMessageService.sendText(chatId, """
                     👥 會員查詢
 
@@ -189,6 +203,11 @@ public class ReportBot extends TelegramLongPollingBot {
 
         if (text.startsWith("分潤計算 ")) {
             commissionService.calculateCommission(chatId, text);
+            return;
+        }
+
+        if(text.startsWith("報表 ")){
+            reportService.sendCustomReport(chatId, text);
             return;
         }
 

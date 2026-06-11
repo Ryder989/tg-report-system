@@ -3,6 +3,7 @@ package com.jay.tgreportsystem.service;
 import com.jay.tgreportsystem.entity.TelegramUser;
 import com.jay.tgreportsystem.repository.TelegramUserRepository;
 import org.springframework.stereotype.Service;
+import com.jay.tgreportsystem.constant.AuditAction;
 
 import java.util.List;
 
@@ -12,15 +13,18 @@ public class PermissionService {
     private final TelegramUserRepository telegramUserRepository;
     private final TelegramMessageService telegramMessageService;
     private final MenuService menuService;
+    private AuditLogService auditLogService;
+
 
     public PermissionService(
             TelegramUserRepository telegramUserRepository,
             TelegramMessageService telegramMessageService,
-            MenuService menuService
-    ) {
+            MenuService menuService,
+            AuditLogService auditLogService) {
         this.telegramUserRepository = telegramUserRepository;
         this.telegramMessageService = telegramMessageService;
         this.menuService = menuService;
+        this.auditLogService = auditLogService;
     }
 
     public void openPermissionMenu(Long chatId, TelegramUser loginUser) {
@@ -105,11 +109,16 @@ public class PermissionService {
                 return;
             }
 
+            String oldRole = user.getRoleCode();
+            Integer oldLevel = user.getLevel_id();
+
             user.setEnabled(true);
             user.setLevel_id(levelId);
             user.setRoleCode(getRoleCodeByLevel(levelId));
 
             telegramUserRepository.save(user);
+
+            auditLogService.saveLog(loginUser,user,AuditAction.MODIFY,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"開通權限");
 
             telegramMessageService.sendText(chatId, """
                     ✅ 開通成功
@@ -166,10 +175,16 @@ public class PermissionService {
                 return;
             }
 
+            String oldRole = user.getRoleCode();
+            Integer oldLevel = user.getLevel_id();
+
+
             user.setLevel_id(levelId);
             user.setRoleCode(getRoleCodeByLevel(levelId));
 
             telegramUserRepository.save(user);
+
+            auditLogService.saveLog(loginUser,user,AuditAction.MODIFY,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"修改權限");
 
             telegramMessageService.sendText(chatId, """
                     ✅ 權限修改成功
@@ -220,8 +235,19 @@ public class PermissionService {
                 return;
             }
 
+            // 禁止停用總監
+            if (user.getLevel_id() == 1){
+                telegramMessageService.sendText(chatId,"無法停用總監");
+                return;
+            }
+
+            String oldRole = user.getRoleCode();
+            Integer oldLevel = user.getLevel_id();
+
             user.setEnabled(false);
             telegramUserRepository.save(user);
+
+            auditLogService.saveLog(loginUser,user,AuditAction.MODIFY,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"帳號停用");
 
             telegramMessageService.sendText(chatId, """
                     🚫 帳號停用成功
@@ -270,8 +296,13 @@ public class PermissionService {
                 return;
             }
 
+            String oldRole = user.getRoleCode();
+            Integer oldLevel = user.getLevel_id();
+
             user.setEnabled(true);
             telegramUserRepository.save(user);
+
+            auditLogService.saveLog(loginUser,user,AuditAction.MODIFY,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"帳號啟用");
 
             telegramMessageService.sendText(chatId, """
                     🔓 帳號啟用成功
