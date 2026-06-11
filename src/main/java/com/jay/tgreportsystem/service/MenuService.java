@@ -35,8 +35,8 @@ public class MenuService {
 
         KeyboardRow row2 = new KeyboardRow();
         row2.add("📊 今日報表");
-        row2.add("🏆 代理排行");
         row2.add("📅 自訂報表");
+        row2.add("🏆 代理排行");
 
         KeyboardRow row3 = new KeyboardRow();
         row3.add("🚨 異常提醒");
@@ -56,6 +56,7 @@ public class MenuService {
         telegramMessageService.executeMessage(message);
     }
 
+    /// 2026/06/12 權限管理選單
     public void sendPermissionMenu(Long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId.toString());

@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
+/// 使用者log TABLE
 @Table(name = "audit_log")
 public class AuditLog {
 

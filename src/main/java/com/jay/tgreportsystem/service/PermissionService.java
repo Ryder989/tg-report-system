@@ -36,6 +36,7 @@ public class PermissionService {
         menuService.sendPermissionMenu(chatId);
     }
 
+    /// 2026/06/12 待審核帳號
     public void showPendingUsers(Long chatId, TelegramUser loginUser) {
         if (!hasPermission(loginUser, 1)) {
             noPermission(chatId);
@@ -78,6 +79,7 @@ public class PermissionService {
         telegramMessageService.sendText(chatId, sb.toString());
     }
 
+    /// 2026/06/12 開通權限
     public void approveUser(Long chatId, TelegramUser loginUser, String text) {
         if (!hasPermission(loginUser, 1)) {
             noPermission(chatId);
@@ -118,7 +120,7 @@ public class PermissionService {
 
             telegramUserRepository.save(user);
 
-            auditLogService.saveLog(loginUser,user,AuditAction.MODIFY,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"開通權限");
+            auditLogService.saveLog(loginUser,user,AuditAction.OPEN,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"開通權限");
 
             telegramMessageService.sendText(chatId, """
                     ✅ 開通成功
@@ -144,6 +146,7 @@ public class PermissionService {
         }
     }
 
+    /// 2026/06/12 修改權限
     public void modifyUser(Long chatId, TelegramUser loginUser, String text) {
         if (!hasPermission(loginUser, 1)) {
             noPermission(chatId);
@@ -172,6 +175,11 @@ public class PermissionService {
 
             if (user == null) {
                 telegramMessageService.sendText(chatId, "找不到使用者");
+                return;
+            }
+
+            if (user.getLevel_id() == 1) {
+                telegramMessageService.sendText(chatId, "無法修改總監權限");
                 return;
             }
 
@@ -210,6 +218,7 @@ public class PermissionService {
         }
     }
 
+    /// 2026/06/12 停用帳號
     public void disableUser(Long chatId, TelegramUser loginUser, String text) {
         if (!hasPermission(loginUser, 1)) {
             noPermission(chatId);
@@ -247,7 +256,7 @@ public class PermissionService {
             user.setEnabled(false);
             telegramUserRepository.save(user);
 
-            auditLogService.saveLog(loginUser,user,AuditAction.MODIFY,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"帳號停用");
+            auditLogService.saveLog(loginUser,user,AuditAction.DISABLE,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"帳號停用");
 
             telegramMessageService.sendText(chatId, """
                     🚫 帳號停用成功
@@ -271,6 +280,7 @@ public class PermissionService {
         }
     }
 
+    /// 2026/06/12 啟用帳號
     public void enableUser(Long chatId, TelegramUser loginUser, String text) {
         if (!hasPermission(loginUser, 1)) {
             noPermission(chatId);
@@ -302,7 +312,7 @@ public class PermissionService {
             user.setEnabled(true);
             telegramUserRepository.save(user);
 
-            auditLogService.saveLog(loginUser,user,AuditAction.MODIFY,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"帳號啟用");
+            auditLogService.saveLog(loginUser,user,AuditAction.ENABLE,oldRole, user.getRoleCode(),oldLevel,user.getLevel_id(),"帳號啟用");
 
             telegramMessageService.sendText(chatId, """
                     🔓 帳號啟用成功
@@ -326,6 +336,7 @@ public class PermissionService {
         }
     }
 
+    /// 2026/06/12 查詢TG ID
     public void queryUser(Long chatId, TelegramUser loginUser, String text) {
         if (!hasPermission(loginUser, 1)) {
             noPermission(chatId);
@@ -381,12 +392,14 @@ public class PermissionService {
         }
     }
 
+    /// 2026/06/12 是否有權限控管
     public boolean hasPermission(TelegramUser user, int maxLevel) {
         return user != null
                 && user.getLevel_id() != null
                 && user.getLevel_id() <= maxLevel;
     }
 
+    /// 2026/06/12 無權限
     public void noPermission(Long chatId) {
         telegramMessageService.sendText(chatId, """
                 ⛔ 權限不足
@@ -399,6 +412,7 @@ public class PermissionService {
         return level != null && level >= 1 && level <= 7;
     }
 
+    /// 2026/06/12 角色等級對應名
     private String getRoleCodeByLevel(Integer level) {
         return switch (level) {
             case 1 -> "DIRECTOR";
